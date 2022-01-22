@@ -34,7 +34,9 @@ def main():
                 if is_game_finished or CURRENT_TURN == 11:
                     WINNER = '-'
                     is_game_finished = False
-                    CURRENT_TURN = 0
+                    CURRENT_TURN = 2
+                    GAME_FIELD = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
+                    draw_game_field(screen)
                     break
                 if CURRENT_TURN == 0:
                     CURRENT_TURN += 2
