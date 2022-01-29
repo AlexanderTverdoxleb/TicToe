@@ -1,6 +1,7 @@
 import pygame
 from main import load_image
 
+
 class SpriteGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
@@ -22,6 +23,7 @@ class Sprite(pygame.sprite.Sprite):
 class GameObject(Sprite):
     game_obj_width = 100
     game_obj_height = 100
+
     def __init__(self, pos_x, pos_y, sprite_group, game_obj_type):
         super().__init__(sprite_group)
         images = {
@@ -33,4 +35,3 @@ class GameObject(Sprite):
             self.game_obj_width + pos_x,
             self.game_obj_height + pos_y
         )
-

@@ -1,7 +1,7 @@
 import pygame
-import os
 import sys
 from button import Button
+from bot import get_move_cords
 
 
 def load_image(name, color_key=None):
@@ -17,13 +17,14 @@ def load_image(name, color_key=None):
         image.set_colorkey(color_key)
     return image
 
+
 def main():
     pygame.init()
     screen_size = (500, 500)
     screen = pygame.display.set_mode(screen_size)
     clock = pygame.time.Clock()
     from sprites import GameObject, SpriteGroup
-    display_start_screen(screen,clock)
+    display_start_screen(screen, clock)
     draw_game_field(screen)
     global CURRENT_TURN, GAME_FIELD, WINNER
     group = SpriteGroup()
@@ -41,7 +42,7 @@ def main():
                 if CURRENT_TURN == 0:
                     CURRENT_TURN += 2
                     continue
-                x,y = pygame.mouse.get_pos()
+                x, y = pygame.mouse.get_pos()
                 if 99 <= x <= 399 and 99 <= y <= 399 and not is_game_finished:
                     x = (x - 99) // 100
                     y = (y - 99) // 100
@@ -49,11 +50,13 @@ def main():
                         continue
                     if CURRENT_TURN % 2 == 0:
                         GAME_FIELD[y][x] = 'x'
-                    else:
+                    elif GAME_MODE != 1:
                         GAME_FIELD[y][x] = 'o'
                     CURRENT_TURN += 1
                     GameObject(x * 100, y * 100, group, GAME_FIELD[y][x])
-                    is_game_finished = check_end_game(y,x,GAME_FIELD[y][x])
+                    is_game_finished = check_end_game(y, x, GAME_FIELD[y][x])
+                    if GAME_MODE == 1 and not is_game_finished:
+                        is_game_finished = make_bot_move(group)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
@@ -65,21 +68,22 @@ def main():
             group.empty()
             end_game_image = load_end_game_image(WINNER if is_game_finished else "draw")
             screen.blit(end_game_image, (0, 0))
+
+
 WINNER = '-'
 GAME_MODE = 0
 GAME_FIELD = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
 CURRENT_TURN = 0
 FPS = 60
 
-def display_start_screen(screen,clock):
+
+def display_start_screen(screen, clock):
     buttons = pygame.sprite.Group()
     y = 230
     x = 160
     intro_text = [["Играть с ботом", setter_game_mode_1], ["Играть с другом", setter_game_mode_2]]
     logo = pygame.transform.scale(load_image('./textures/Logo.PNG'), (200, 200))
     pygame.display.flip()
-    font = pygame.font.Font(None, 30)
-    text_coord = 180
     screen.fill(pygame.Color(20, 189, 172))
 
     for line in intro_text:
@@ -100,9 +104,23 @@ def display_start_screen(screen,clock):
             buttons.draw(screen)
         else:
             return
-        screen.blit(logo,(150,20))
+        screen.blit(logo, (150, 20))
         pygame.display.flip()
         clock.tick(FPS)
+
+
+def make_bot_move(group):
+    from sprites import GameObject
+    global CURRENT_TURN, GAME_FIELD
+    bot_move = get_move_cords(GAME_FIELD, "o")
+    if "indexes" not in bot_move:
+        return False
+    x, y = bot_move["indexes"]
+    GAME_FIELD[x][y] = "o"
+    CURRENT_TURN += 1
+    GameObject(y * 100, x * 100, group, GAME_FIELD[x][y])
+    return check_end_game(x, y, GAME_FIELD[x][y])
+
 
 def check_line(x, y, dx, dy, type):
     score = 0
@@ -120,6 +138,7 @@ def check_line(x, y, dx, dy, type):
         score += 1
     return score >= 3
 
+
 def check_end_game(x, y, value):
     global WINNER
     lines = [lambda: check_line(x, y, 0, 1, value),
@@ -133,6 +152,7 @@ def check_end_game(x, y, value):
             return True
     return False
 
+
 def setter_game_mode_1():
     global GAME_MODE
     GAME_MODE = 1
@@ -144,7 +164,6 @@ def setter_game_mode_2():
 
 
 def draw_game_field(screen):
-    width, height = screen.get_size()
     color = pygame.Color("cyan")
     screen.fill(color)
     coordinates1 = [[100, 200], [400, 200]]
@@ -156,6 +175,7 @@ def draw_game_field(screen):
     pygame.draw.line(screen, pygame.Color("black"), coordinates3[0], coordinates3[1])
     pygame.draw.line(screen, pygame.Color("black"), coordinates4[0], coordinates4[1])
 
+
 def load_end_game_image(winner):
     images = {
         'x': load_image('textures/cross_win.png'),
@@ -163,6 +183,7 @@ def load_end_game_image(winner):
         'draw': load_image('textures/draw.png')
     }
     return images[winner]
+
 
 if __name__ == "__main__":
     main()

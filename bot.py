@@ -4,19 +4,18 @@ KEY_SCORE = "score"
 KEY_INDEXES = "indexes"
 
 
-
-def get_move_cords(player,field):
+def get_move_cords(field, player):
     moves = []
-    available_spots = empty_indexies(field)
-    if is_winner(field,HUMAN):
+    available_spots = empty_indexes(field)
+    if is_winner(field, HUMAN):
         return {KEY_SCORE: -10}
-    if is_winner(field,BOT):
+    if is_winner(field, BOT):
         return {KEY_SCORE: 10}
     if len(available_spots) == 0:
         return {KEY_SCORE: 0}
     for spot in available_spots:
         move = {}
-        x,y = spot
+        x, y = spot
         move[KEY_INDEXES] = spot
         field[x][y] = player
         if player == BOT:
@@ -43,16 +42,16 @@ def get_move_cords(player,field):
     return best_move
 
 
-def empty_indexies(field):
+def empty_indexes(field):
     result = []
     for i in range(3):
         for j in range(3):
             if field[i][j] == '-':
-                result.append((i,j))
+                result.append((i, j))
     return result
 
 
-def is_winner(field,player):
+def is_winner(field, player):
     if (
             (field[0][0] == player and field[0][1] == player and field[0][2] == player) or
             (field[1][0] == player and field[1][1] == player and field[1][2] == player) or
